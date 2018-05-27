@@ -6,10 +6,12 @@ const sequelize = new Sequelize('npmdocs', 'npmdocs', 'npmdocs', {
   pool: {
     max: 5,
     min: 0,
-    acquire: 30000,
+    acquire: 50000,
     idle: 10000
   },
-
+  retry: {
+    max: 10,
+  },
   // http://docs.sequelizejs.com/manual/tutorial/querying.html#operators
   operatorsAliases: false
 });
@@ -37,8 +39,9 @@ export const Package = sequelize.define('package', {
   ],
 });
 
+Package.sync();
 
-export const PackageDownloads = sequelize.define('package', {
+export const PackageDownloads = sequelize.define('package_downloads', {
   package_id: {
     type: Sequelize.INTEGER,
 
@@ -50,12 +53,11 @@ export const PackageDownloads = sequelize.define('package', {
     }
   },
   date: {
-    type: Sequelize.DATE
+    type: Sequelize.DATEONLY
   },
   count: {
     type: Sequelize.INTEGER
   }
 });
 
-Package.sync();
 PackageDownloads.sync();

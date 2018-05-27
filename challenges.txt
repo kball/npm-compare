@@ -1,0 +1,12 @@
+- rate limiting
+  -> limiter
+
+- concurrency errors that look like
+  Unhandled rejection TimeoutError: ResourceRequest timed out
+    at ResourceRequest._fireTimeout (webpack:///./node_modules/generic-pool/lib/ResourceRequest.js?:62:17)
+    at Timeout.bound [as _onTimeout] (webpack:///./node_modules/generic-pool/lib/ResourceRequest.js?:8:15)
+    at ontimeout (timers.js:469:11)
+    at tryOnTimeout (timers.js:304:5)
+    at Timer.listOnTimeout (timers.js:264:5)
+
+  -> maximum concurrency using Promise.map from bluebird
