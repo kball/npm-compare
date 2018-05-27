@@ -11,5 +11,9 @@ module.exports = {
         }
       }
     ]
+  },
+  entry: {
+    index: './src/index.js',
+    load: './src/load.js'
   }
 };
