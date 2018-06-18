@@ -1,5 +1,6 @@
-import { Package, PackageDownloads } from './models';
+import { Package, PackageDownloads, PackageDownloadsPerWeek } from './models';
 import { RateLimiter } from 'limiter';
+import { groupBy, sum } from 'lodash';
 import Promise from 'bluebird';
 import moment from 'moment';
 const RegClient = require('npm-registry-client');
@@ -59,6 +60,29 @@ function getDownloads(project) {
     }).catch((err) => {
       console.log(err);
     });
+  });
+}
+
+function consolidateDownloads(project) {
+  return PackageDownloads.findAll({where: {package_id: project.id}}).then((downloads) => {
+    const groups = groupBy(downloads, (packageDownload) => {
+      return moment(packageDownload.date).startOf('week');
+    });
+    return Promise.map(Object.entries(groups), ([key, group]) => {
+      const date = key;
+      const count = sum(group.map(d => d.count));
+      return PackageDownloadsPerWeek.findOrCreate({ where: { package_id: project.id, date: date }}).
+      then(([dl, created]) => {
+        dl.count = count;
+        dl.save();
+      });
+    }, { concurrency: 10 });
+  });
+}
+
+export function consolidateAllDownloads() {
+  return Package.findAll().then((packages) => {
+    return Promise.mapSeries(packages, consolidateDownloads, { concurrency: 10 });
   });
 }
 

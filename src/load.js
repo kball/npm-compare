@@ -1,4 +1,4 @@
-import { addPackages } from './functions';
+import { consolidateAllDownloads } from './functions';
 
-addPackages('react');
+consolidateAllDownloads();
 

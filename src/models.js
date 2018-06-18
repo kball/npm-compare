@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize('npmdocs', 'npmdocs', 'npmdocs', {
+export const sequelize = new Sequelize('npmdocs', 'npmdocs', 'npmdocs', {
   host: 'localhost',
   dialect: 'mysql',
 
@@ -58,6 +58,38 @@ export const PackageDownloads = sequelize.define('package_downloads', {
   count: {
     type: Sequelize.INTEGER
   }
+}, {
+  indexes: [
+    {
+      fields: ['package_id']
+    },
+  ],
 });
 
 PackageDownloads.sync();
+
+export const PackageDownloadsPerWeek = sequelize.define('package_downloads_per_week', {
+  package_id: {
+    type: Sequelize.INTEGER,
+
+    references: {
+      // This is a reference to another model
+      model: Package,
+      // This is the column name of the referenced model
+      key: 'id',
+    }
+  },
+  date: {
+    type: Sequelize.DATEONLY
+  },
+  count: {
+    type: Sequelize.INTEGER
+  }
+}, {
+  indexes: [
+    {
+      fields: ['package_id']
+    },
+  ],
+});
+PackageDownloadsPerWeek.sync();
