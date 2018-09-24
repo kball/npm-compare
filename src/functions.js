@@ -128,8 +128,17 @@ function installRanges(startDate) {
 export function addDependents(basePackage) {
   const repo = npm.repo(basePackage);
 
-  repo.dependents().on('data', (repo) => {
-    console.log(repo);
+  let i = 0;
+  const reader = repo.dependents();
+  reader.on('data', (repo) => {
+    reader.pause();
+    savePackage(repo, basePackage).then(() => {
+      reader.resume();
+    });
+    i++;
+    if (i % 20 === 0) {
+      console.log('i: ', i);
+    }
   });
 }
 
