@@ -3,8 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "webpack --mode development --progress --watch",
-    "build": "webpack --mode production"
+    "build": "babel src -d dist"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
@@ -13,16 +12,17 @@
     "lodash": "^4.17.10",
     "moment": "^2.22.1",
     "mysql2": "^1.5.3",
+    "npm-api": "^0.4.12",
+    "npm-api-dependents": "^1.0.0",
     "npm-registry-client": "^8.5.1",
     "sequelize": "^4.37.10"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.4",
     "babel-plugin-transform-es2015-template-literals": "^6.22.0",
     "babel-preset-env": "^1.7.0",
-    "webpack": "^4.9.1",
-    "webpack-cli": "^2.1.4"
+    "babel-watch": "^2.0.7",
+    "babel-cli": "^6.26.0"
   },
   "main": "index.js",
   "keywords": [],

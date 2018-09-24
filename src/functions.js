@@ -3,6 +3,12 @@ import { RateLimiter } from 'limiter';
 import { groupBy, sum } from 'lodash';
 import Promise from 'bluebird';
 import moment from 'moment';
+import NpmAPI from 'npm-api';
+import dependents from 'npm-api-dependents'
+
+const npm = NpmAPI();
+npm.use(dependents());
+
 const RegClient = require('npm-registry-client');
 
 const client = new RegClient();
@@ -119,18 +125,11 @@ function installRanges(startDate) {
 }
 
 
-export function addPackages(tag, offset = 0) {
-  const url = `${baseURI}-/v1/search?text=${tag}&from=${offset}&size=200`;
-  getLimited(url, {}, (err, data, raw, res) => {
-    Promise.all(data.objects.map((obj) => {
-      return savePackage(obj.package, tag);
-    })).then(() => {
-      if (data.total > offset + data.objects.length) {
-        addPackages(tag, offset + 200);
-      } else {
-        process.exit();
-      }
-    });
+export function addDependents(basePackage) {
+  const repo = npm.repo(basePackage);
+
+  repo.dependents().on('data', (repo) => {
+    console.log(repo);
   });
 }
 

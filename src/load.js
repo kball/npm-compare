@@ -1,4 +1,4 @@
-import { consolidateAllDownloads } from './functions';
+import { addDependents } from './functions';
 
-consolidateAllDownloads();
+addDependents('vue');
 
