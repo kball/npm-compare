@@ -1,4 +1,3 @@
 import { addDependents } from './functions';
 
-addDependents('vue');
-
+addDependents('react');

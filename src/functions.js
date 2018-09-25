@@ -51,7 +51,7 @@ function packageCreated(pkgName) {
 
 function getDownloads(project) {
   const ranges = installRanges(project.created);
-  ranges.forEach((range) => {
+  return ranges.map((range) => {
     const url = `https://api.npmjs.org/downloads/range/${range}/${encodeURIComponent(project.name)}`;
     return getAlternateLimited(url, {}).then((data) => {
       return Promise.map(data.downloads, (downloadStats) => {
@@ -94,21 +94,25 @@ export function consolidateAllDownloads() {
 
 function savePackage(obj, tag) {
   return Package.findOrCreate({ where: {name: obj.name, tag } }).spread((project, created) => {
-    let p1;
+    let promise;
     if (created || !project.created) {
-      p1 = packageCreated(project.name).then((time) => {
+      promise = packageCreated(project.name).then((time) => {
         project.created = time;
-        project.save();
+        return project.save();
+      }).then(() => {
+        return getDownloads(project);
       });
+    } else {
+      promise = getDownloads(project)
     }
-    getDownloads(project);
-    return p1 || Promise.resolve();
+
+    return promise;
   }).catch((err) => {
     console.log(err);
   });
 }
 
-function installRanges(startDate) {
+export function installRanges(startDate) {
   const ranges = [];
   let date = moment(startDate);
   const today = moment();
@@ -135,10 +139,6 @@ export function addDependents(basePackage) {
     savePackage(repo, basePackage).then(() => {
       reader.resume();
     });
-    i++;
-    if (i % 20 === 0) {
-      console.log('i: ', i);
-    }
   });
 }
 
