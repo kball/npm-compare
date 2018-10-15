@@ -93,3 +93,23 @@ export const PackageDownloadsPerWeek = sequelize.define('package_downloads_per_w
   ],
 });
 PackageDownloadsPerWeek.sync();
+
+export const PackageCount = sequelize.define('package_counts', {
+  date: {
+    type: Sequelize.DATEONLY
+  },
+  count: {
+    type: Sequelize.INTEGER
+  },
+  tag: {
+    type: Sequelize.STRING
+  },
+}, {
+  indexes: [
+    {
+      fields: ['date']
+    },
+  ],
+});
+
+PackageCount.sync();

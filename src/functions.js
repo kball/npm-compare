@@ -1,6 +1,7 @@
-import { Package, PackageDownloads, PackageDownloadsPerWeek } from './models';
+import { Package, PackageDownloads, PackageDownloadsPerWeek, PackageCount } from './models';
 import { RateLimiter } from 'limiter';
 import { groupBy, sum } from 'lodash';
+import { Op } from 'sequelize';
 import Promise from 'bluebird';
 import moment from 'moment';
 import NpmAPI from 'npm-api';
@@ -69,7 +70,7 @@ function getDownloads(project) {
   });
 }
 
-function consolidateDownloads(project) {
+export function consolidateDownloads(project) {
   return PackageDownloads.findAll({where: {package_id: project.id}}).then((downloads) => {
     const groups = groupBy(downloads, (packageDownload) => {
       return moment(packageDownload.date).startOf('week');
@@ -92,7 +93,7 @@ export function consolidateAllDownloads() {
   });
 }
 
-function savePackage(obj, tag) {
+export function savePackage(obj, tag) {
   return Package.findOrCreate({ where: {name: obj.name, tag } }).spread((project, created) => {
     let promise;
     if (created || !project.created) {
@@ -142,3 +143,44 @@ export function addDependents(basePackage) {
   });
 }
 
+export function loadDownloadsAbove(id) {
+  return Package.findAll({where: {id: {[Op.gt]: id}}}).then((packages) => {
+    Promise.map(packages, p => getDownloads(p));
+  });
+};
+
+export function computePackageCounts(tag) {
+  const starts = {};
+  Package.findAll({where: {tag: tag}}).then((repos) => {
+    repos.forEach((repo) => {
+      const date = moment(repo.created).format('YYYY-MM-DD');
+      starts[date] = starts[date] || 0;
+      starts[date] += 1;
+    });
+  }).then(() => {
+    const counts = {};
+    let total = 0;
+    let startDate = Object.keys(starts).sort((a, b) => {
+      return moment(a).unix() - moment(b).unix();
+    })[0];
+    const dates = [];
+    let date = moment(startDate);
+    const now = moment();
+    while (date < moment()) {
+      dates.push(date.format('YYYY-MM-DD'));
+      date.add(1, 'day');
+    }
+    dates.forEach((date) => {
+      total = total + (starts[date] || 0);
+      counts[date] = total;
+    });
+    Promise.map(Object.keys(counts), (date) => {
+      return PackageCount.findOrCreate({where: {tag: tag, date: date}}).spread((model, created) => {
+        model.count = counts[date];
+        return model.save();
+      });
+    }, {concurrency: 10}).then(() => {
+      process.exit(0);
+    });
+  });
+}

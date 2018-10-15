@@ -1,3 +1,4 @@
-import { addDependents } from './functions';
+import { consolidateDownloads } from './functions';
 
-addDependents('react');
+consolidateDownloads({id: 38050});
+consolidateDownloads({id: 38051});
